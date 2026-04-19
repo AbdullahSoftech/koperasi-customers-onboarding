@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build *)",
+      "Bash(dotnet remove *)",
+      "Bash(python3 -c ' *)",
+      "Bash(powershell -Command ' *)",
+      "Bash(xargs grep *)",
+      "Bash(dotnet ef *)",
+      "Bash(Remove-Item \"D:\\\\.Net Project\\\\Koperasi\\\\Infrastructure\\\\Migrations\\\\20260419000001_RegistrationFlowRefactor.cs\" -Force)"
+    ]
+  }
+}
