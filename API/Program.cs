@@ -1,6 +1,6 @@
 using API.Middleware;
 using Application;
-using Infrastructure;
+using Infrastructure; // API: Application + Infrastructure + Shared
 
 var builder = WebApplication.CreateBuilder(args);
 
