@@ -80,8 +80,11 @@ public class MigrateCustomerCommandHandler
     }
 
     private static CustomerResponse MapToResponse(Customer c) => new(
-        c.Id, c.PhoneNumber, c.Email,
+        c.Id, 
+        c.PhoneNumber, 
+        c.Email,
         c.FullName,
-        c.Status.ToString(), c.CustomerType.ToString(),
+        c.Status.ToString(), 
+        c.CustomerType.ToString(),
         c.CreatedAt);
 }
