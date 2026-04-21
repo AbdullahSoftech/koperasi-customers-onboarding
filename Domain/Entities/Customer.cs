@@ -14,7 +14,7 @@ public class Customer : BaseEntity
     public CustomerStatus Status { get; set; } = CustomerStatus.Pending;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-    // Navigation properties — all in same namespace, no extra using needed
+    // Navigation properties
     public virtual CustomerAuth? Auth { get; set; }
     public virtual ICollection<OtpRequest> OtpRequests { get; set; } = new List<OtpRequest>();
     public virtual ICollection<PrivacyConsent> PrivacyConsents { get; set; } = new List<PrivacyConsent>();
