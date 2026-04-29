@@ -27,9 +27,6 @@ public class SetupPinCommandHandler : IRequestHandler<SetupPinCommand, ApiRespon
         if (customer is null)
             return ApiResponse<bool>.Fail("Customer not found.", "CUSTOMER_NOT_FOUND");
 
-        if (request.Pin.Length != 6 || !request.Pin.All(char.IsDigit))
-            return ApiResponse<bool>.Fail("PIN must be exactly 6 digits.", "INVALID_PIN");
-
         var pinHash = BCrypt.Net.BCrypt.HashPassword(request.Pin);
 
         if (customer.Auth is null)

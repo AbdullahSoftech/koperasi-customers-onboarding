@@ -20,9 +20,6 @@ public class ConfirmPinCommandHandler : IRequestHandler<ConfirmPinCommand, ApiRe
     public async Task<ApiResponse<bool>> Handle(
         ConfirmPinCommand request, CancellationToken cancellationToken)
     {
-        if (request.Pin.Length != 6 || !request.Pin.All(char.IsDigit))
-            return ApiResponse<bool>.Fail("PIN must be exactly 6 digits.", "INVALID_PIN");
-
         var auth = await _context.CustomerAuths
             .FirstOrDefaultAsync(a => a.CustomerId == request.CustomerId, cancellationToken);
 
