@@ -1,3 +1,5 @@
+using Domain.Enums;
+
 namespace Application.DTOs;
 
 public record RegisterCustomerRequest(
@@ -14,9 +16,21 @@ public record InitiateRegistrationResponse(
 );
 
 public record MigrateCustomerRequest(
-    Guid OtpRequestId,
+    string FullName,
     string PhoneNumber,
-    string? OldSystemRef
+    string Email,
+    string NationalId,
+    CustomerType CustomerType,
+    string? OldSystemRef,
+    string? Notes
+);
+
+public record MigrateCustomerResponse(
+    Guid CustomerId,
+    string FullName,
+    string PhoneNumber,
+    string NationalId,
+    string Status
 );
 
 public record SetupPinRequest(string Pin);

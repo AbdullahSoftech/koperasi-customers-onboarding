@@ -9,13 +9,17 @@ using Shared.Wrappers;
 namespace Application.Commands.Customers;
 
 public record MigrateCustomerCommand(
+    string FullName,
     string PhoneNumber,
-    Guid OtpRequestId,
-    string? OldSystemRef
-) : IRequest<ApiResponse<CustomerResponse>>;
+    string Email,
+    string NationalId,
+    CustomerType CustomerType,
+    string? OldSystemRef,
+    string? Notes
+) : IRequest<ApiResponse<MigrateCustomerResponse>>;
 
 public class MigrateCustomerCommandHandler
-    : IRequestHandler<MigrateCustomerCommand, ApiResponse<CustomerResponse>>
+    : IRequestHandler<MigrateCustomerCommand, ApiResponse<MigrateCustomerResponse>>
 {
     private readonly IAppDbContext _context;
 
@@ -24,67 +28,57 @@ public class MigrateCustomerCommandHandler
         _context = context;
     }
 
-    public async Task<ApiResponse<CustomerResponse>> Handle(
+    public async Task<ApiResponse<MigrateCustomerResponse>> Handle(
         MigrateCustomerCommand request, CancellationToken cancellationToken)
     {
-        // Ensure OTP was verified for migration
-        var otp = await _context.OtpRequests
-            .FirstOrDefaultAsync(o => o.Id == request.OtpRequestId
-                                   && o.PhoneNumber == request.PhoneNumber
-                                   && o.IsVerified
-                                   && o.Purpose == OtpPurpose.Migration,
-                                 cancellationToken);
+        // Prevent duplicate migration
+        var alreadyExists = await _context.Customers
+            .AnyAsync(c => c.NationalId == request.NationalId, cancellationToken);
 
-        if (otp is null)
-            return ApiResponse<CustomerResponse>.Fail(
-                "Phone number not verified. Please complete OTP verification first.",
-                "OTP_NOT_VERIFIED");
+        if (alreadyExists)
+            return ApiResponse<MigrateCustomerResponse>.Fail(
+                "A customer with this IC number already exists.",
+                "ALREADY_EXISTS");
 
-        // Find existing customer
-        var customer = await _context.Customers
-            .FirstOrDefaultAsync(c => c.PhoneNumber == request.PhoneNumber, cancellationToken);
+        // Insert customer with Pending status
+        var customer = new Customer
+        {
+            FullName = request.FullName,
+            PhoneNumber = request.PhoneNumber,
+            Email = request.Email,
+            NationalId = request.NationalId,
+            CustomerType = request.CustomerType,
+            Status = CustomerStatus.Pending
+        };
 
-        if (customer is null)
-            return ApiResponse<CustomerResponse>.Fail(
-                "No existing account found with this phone number.",
-                "ACCOUNT_NOT_FOUND");
-
-        // Create migration record
+        // Migration record
         var migration = new MigrationRecord
         {
             CustomerId = customer.Id,
             OldSystemRef = request.OldSystemRef,
-            MigrationStatus = "PENDING"
+            MigrationStatus = "PENDING",     // <-- flipped to COMPLETED after they verify OTP
+            MigratedAt = null,               // <-- set when they successfully verify
+            Notes = request.Notes ?? "Migrated from legacy system"
         };
 
+        _context.Customers.Add(customer);
         _context.MigrationRecords.Add(migration);
-
-        // Update customer type
-        customer.CustomerType = CustomerType.Migrated;
-        customer.UpdatedAt = DateTime.UtcNow;
-
-        otp.CustomerId = customer.Id;
-
         _context.AuditLogs.Add(new AuditLog
         {
             CustomerId = customer.Id,
-            Action = "MIGRATION_STARTED",
-            Description = $"Migration initiated for {request.PhoneNumber}"
+            Action = "CUSTOMER_MIGRATED",
+            Description = $"Customer migrated from old system. OldSystemRef: {request.OldSystemRef}"
         });
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return ApiResponse<CustomerResponse>.Ok(
-            MapToResponse(customer),
-            "Migration initiated successfully.");
+        return ApiResponse<MigrateCustomerResponse>.Ok(
+            new MigrateCustomerResponse(
+                customer.Id,
+                customer.FullName,
+                customer.PhoneNumber,
+                customer.NationalId,
+                customer.Status.ToString()),
+            "Customer migrated successfully. They will be prompted to verify on first login.");
     }
-
-    private static CustomerResponse MapToResponse(Customer c) => new(
-        c.Id, 
-        c.PhoneNumber, 
-        c.Email,
-        c.FullName,
-        c.Status.ToString(), 
-        c.CustomerType.ToString(),
-        c.CreatedAt);
 }

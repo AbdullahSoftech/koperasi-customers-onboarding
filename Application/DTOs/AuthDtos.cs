@@ -3,7 +3,8 @@
 public record InitiateLoginRequest(string IcNumber);
 
 public record InitiateLoginResponse(
-    Guid CustomerId,
+    Guid customerId,
+    Guid otpRequestId,
     string PhoneNumber,
     string MaskedEmail,
     Guid LoginSessionId

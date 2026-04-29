@@ -90,14 +90,19 @@ public class CustomersController : ControllerBase
     /// Migrate an existing customer to the new platform (after OTP verified).
     /// </summary>
     [HttpPost("migrate")]
-    [ProducesResponseType(typeof(ApiResponse<CustomerResponse>), 200)]
-    [ProducesResponseType(typeof(ApiResponse<CustomerResponse>), 400)]
+    [ProducesResponseType(typeof(ApiResponse<MigrateCustomerResponse>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<MigrateCustomerResponse>), 400)]
     public async Task<IActionResult> Migrate([FromBody] MigrateCustomerRequest request)
     {
         var result = await _mediator.Send(new MigrateCustomerCommand(
+            request.FullName,
             request.PhoneNumber,
-            request.OtpRequestId,
-            request.OldSystemRef));
+            request.Email,
+            request.NationalId,
+            request.CustomerType,
+            request.OldSystemRef,
+            request.Notes)
+        );
 
         return result.Success ? Ok(result) : BadRequest(result);
     }
