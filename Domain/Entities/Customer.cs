@@ -18,7 +18,7 @@ public class Customer : BaseEntity
     public virtual CustomerAuth? Auth { get; set; }
     public virtual ICollection<OtpRequest> OtpRequests { get; set; } = new List<OtpRequest>();
     public virtual ICollection<PrivacyConsent> PrivacyConsents { get; set; } = new List<PrivacyConsent>();
-    public virtual ICollection<MigrationRecord> Migrations { get; set; } = new List<MigrationRecord>();
+    public virtual MigrationRecord? Migration { get; set; }
     public virtual ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
     public virtual ICollection<LoginSession> LoginSessions { get; set; } = new List<LoginSession>();
 }
