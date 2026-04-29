@@ -45,7 +45,7 @@ public class OtpController : ControllerBase
                 request.OtpRequestId,
                 request.PhoneNumber,
                 request.OtpCode,
-                request.LoginSessionId));
+                request?.LoginSessionId));
 
         return result.Success ? Ok(result) : BadRequest(result);
     }
@@ -61,7 +61,7 @@ public class OtpController : ControllerBase
     public async Task<IActionResult> SendEmailOtp([FromBody] SendEmailOtpRequest request)
     {
         var result = await _mediator.Send(
-            new SendEmailOtpCommand(request.CustomerId, request.Purpose, request.LoginSessionId));
+            new SendEmailOtpCommand(request.CustomerId, request.Purpose, request?.LoginSessionId));
 
         return result.Success ? Ok(result) : BadRequest(result);
     }
