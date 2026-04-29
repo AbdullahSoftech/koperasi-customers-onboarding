@@ -87,9 +87,9 @@ public class AppDbContext : DbContext, IAppDbContext
             e.Property(x => x.OldSystemRef).HasMaxLength(100);
             e.Property(x => x.MigrationStatus).IsRequired().HasMaxLength(20);
             e.Property(x => x.Notes).HasMaxLength(500);
-            e.HasOne(x => x.Customer)
-             .WithMany(c => c.Migrations)
-             .HasForeignKey(x => x.CustomerId)
+            e.HasOne(m => m.Customer)
+             .WithOne(c => c.Migration)
+             .HasForeignKey<MigrationRecord>(m => m.CustomerId)
              .OnDelete(DeleteBehavior.Cascade);
         });
 
